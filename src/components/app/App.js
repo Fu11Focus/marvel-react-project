@@ -5,10 +5,13 @@ import CharInfo from "../charInfo/CharInfo";
 
 import decoration from '../../resources/img/vision.png';
 
-import getCharacters from "../servises/getApi";
+import MarvelServices from "../services/getApi";
 
 const App = () => {
-    getCharacters();
+    
+    const marvelServices = new MarvelServices;
+    marvelServices.getCharacters();
+    
     return (
         <div className="app">
             <AppHeader/>
