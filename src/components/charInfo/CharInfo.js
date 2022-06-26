@@ -1,61 +1,125 @@
+import { Component } from 'react';
+import { PropTypes } from 'prop-types';
+import ErrorMessage from '../errorMessage/ErrorMessage';
+import Spinner from '../spinner/Spinner';
+import Skeleton from '../skeleton/Skeleton';
+import MarvelServices from '../services/getApi';
 import './charInfo.scss';
-import thor from '../../resources/img/thor.jpeg';
 
-const CharInfo = () => {
-    return (
-        <div className="char__info">
-            <div className="char__basics">
-                <img src={thor} alt="abyss"/>
-                <div>
-                    <div className="char__info-name">thor</div>
-                    <div className="char__btns">
-                        <a href="#" className="button button__main">
-                            <div className="inner">homepage</div>
-                        </a>
-                        <a href="#" className="button button__secondary">
-                            <div className="inner">Wiki</div>
-                        </a>
-                    </div>
-                </div>
+class CharInfo extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            char: null,
+            error: false,
+            loading: false
+        }
+    }
+
+    componentDidMount() {
+        this.onCharUpdate();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.charId !== prevProps.charId) {
+            this.onCharUpdate();
+        }
+    }
+
+    onCharLoading = () => {
+        this.setState({ loading: true });
+    }
+
+    onCharLoaded = (char) => {
+        this.setState({ char, loading: false });
+    }
+
+    onError = () => {
+        this.setState({loading: false, error: true});
+    }
+
+    onCharUpdate = () => {
+        const {charId} = this.props;
+        if (!charId) {
+            return;
+        }
+
+        this.onCharLoading();
+        const marvelServ = new MarvelServices();
+        marvelServ.getCharacter(charId)
+                  .then(this.onCharLoaded)
+                  .catch(this.onError);        
+    }
+
+    
+
+    render() {
+        const {char, error, loading} = this.state;
+        const skeleton = char || error || loading ? null : <Skeleton/>;
+        const content = !(loading || error || !char) ? <CharBoxInfo char={char}/> : null;
+        const errors = error ? <ErrorMessage/> : null;
+        const load = loading ? <Spinner/> : null;
+
+        return (
+            <div className='char__info'>
+                {skeleton}
+                {content}
+                {errors}
+                {load}
             </div>
-            <div className="char__descr">
-                In Norse mythology, Loki is a god or jötunn (or both). Loki is the son of Fárbauti and Laufey, and the brother of Helblindi and Býleistr. By the jötunn Angrboða, Loki is the father of Hel, the wolf Fenrir, and the world serpent Jörmungandr. By Sigyn, Loki is the father of Nari and/or Narfi and with the stallion Svaðilfari as the father, Loki gave birth—in the form of a mare—to the eight-legged horse Sleipnir. In addition, Loki is referred to as the father of Váli in the Prose Edda.
-            </div>
-            <div className="char__comics">Comics:</div>
-            <ul className="char__comics-list">
-                <li className="char__comics-item">
-                    All-Winners Squad: Band of Heroes (2011) #3
-                </li>
-                <li className="char__comics-item">
-                    Alpha Flight (1983) #50
-                </li>
-                <li className="char__comics-item">
-                    Amazing Spider-Man (1999) #503
-                </li>
-                <li className="char__comics-item">
-                    Amazing Spider-Man (1999) #504
-                </li>
-                <li className="char__comics-item">
-                    AMAZING SPIDER-MAN VOL. 7: BOOK OF EZEKIEL TPB (Trade Paperback)
-                </li>
-                <li className="char__comics-item">
-                    Amazing-Spider-Man: Worldwide Vol. 8 (Trade Paperback)
-                </li>
-                <li className="char__comics-item">
-                    Asgardians Of The Galaxy Vol. 2: War Of The Realms (Trade Paperback)
-                </li>
-                <li className="char__comics-item">
-                    Vengeance (2011) #4
-                </li>
-                <li className="char__comics-item">
-                    Avengers (1963) #1
-                </li>
-                <li className="char__comics-item">
-                    Avengers (1996) #1
-                </li>
-            </ul>
-        </div>
-    )
+        )
+    }
 }
 
+const CharBoxInfo = ({char}) => {
+    const {name, thumbnail, description, homepage, wikipage, comics} = char;
+    let cms = null; 
+    let imgStyle = {'objectFit' : 'cover'}
+    if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
+        imgStyle = {'objectFit' : 'contain'};
+    }
+
+    if (comics.length === 0) {
+        cms = "Don`t have info about comics";   
+    }else if (comics.length > 0) {
+        comics.splice(10, comics.length - 10)
+        cms = comics.map((item, i) => {
+            return (
+                <li key={i} className="char__comics-item">
+                    {item.name}
+                </li> 
+            )
+        })
+    } 
+    
+    return (
+        <>
+            <div className="char__basics">
+                    <img src={thumbnail} alt={name} style={imgStyle}/>
+                    <div>
+                        <div className="char__info-name">{name}</div>
+                        <div className="char__btns">
+                            <a href={homepage} className="button button__main">
+                                <div className="inner">homepage</div>
+                            </a>
+                            <a href={wikipage} className="button button__secondary">
+                                <div className="inner">Wiki</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div className="char__descr">
+                    {description}
+                </div>
+                <div className="char__comics">Comics:</div>
+                <ul className="char__comics-list">
+                    {cms}
+                </ul>
+        </>
+    )
+}
+CharInfo.propTypes = {
+    charId: PropTypes.number,
+    
+}
 export default CharInfo;
