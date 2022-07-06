@@ -1,59 +1,51 @@
 import './charList.scss';
 import MarvelServices from '../services/getApi';
 import {PropTypes} from 'prop-types';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/Spinner';
 
-class CharList extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            chars: [],
-            list: [],
-            error: false,
-            loading: true,
-            newItemLoading: false,
-            offset: null,
-            charEnded: false
-        }
+const CharList = (props) => {
+
+    const [chars, setChars] = useState([]);
+    const [error, setError] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [newItemLoading, setNewItemLoading] = useState(false);
+    const [offset, setOffset] = useState(null);
+    const [charEnded, setCharEnded] = useState(false);
+
+    useEffect (() => {
+        loadChars();
+    }, []);
+
+    const onCharLoading = () => {
+        setNewItemLoading(true);
     }
 
-    componentDidMount() {
-        this.loadChars();
-    }
-
-    onCharLoading = () => {
-        this.setState({newItemLoading:true})
-    }
-
-    loadChars = async () => {
-        this.onCharLoading();
+    const loadChars = async () => {
+        onCharLoading();
         const marvelServ = new MarvelServices();
-        await marvelServ.getAllCharacters(this.state.offset)
+        await marvelServ.getAllCharacters(offset)
             .then(data => {
                 let ended = false;
                 if (data.length < 9) {
                     ended = true;
                 }
-
-                this.setState(({chars, offset}) => ({ chars: [...chars, ...data], loading: false, offset: offset + 9, newItemLoading: false, charEnded: ended }));
-                this.buildList();
+                setChars(chars => [...chars, ...data] );
+                setLoading(false);
+                setOffset(offset => offset + 9);
+                setNewItemLoading(false);
+                setCharEnded(ended);
+                buildList();
             })
             .catch(() => {
-                this.setState(() => { return { error: true, loading: false } })
+                setError(true);
+                setLoading(false);
             });
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.charId !== prevProps.charId) {
-            this.loadChars();
-        }
-    }
-
-    buildList = () => {
-        this.setState(() => {
-            const list = this.state.chars.map(item => {
+    function buildList() {
+            const list = chars.map(item => {
                 let style = { 'objectFit': 'cover' };
                 let classNameItem = 'char__item';
 
@@ -61,47 +53,43 @@ class CharList extends Component {
                     style = { 'objectFit': 'contain' };
                 }
 
-                if (item.id === this.props.charId){
+                if (item.id === props.charId){
                     classNameItem = "char__item char__item_selected";
                 }
 
                 return (<li className={classNameItem}
                             key={item.id}
                             tabIndex="0"
-                            onKeyPress={() => this.props.onCharSelected(item.id)}
-                            onClick={() => this.props.onCharSelected(item.id)}>
+                            onKeyPress={() => props.onCharSelected(item.id)}
+                            onClick={() => props.onCharSelected(item.id)}>
                                 <img src={item.thumbnail} alt={item.name} style={style} />
                                 <div className="char__name">{item.name}</div>
                         </li>)
             });
-            return { list };
-        })
+            return list;
     }
 
-    render() {
-        const { error, list, loading, newItemLoading, charEnded } = this.state;
-        const content = !loading && !error ? list : null;
-        const errors = error ? <ErrorMessage /> : null;
-        const spinner = loading ? <Spinner /> : null;
+    const items = buildList();
+    const content = !loading && !error ? items : null;
+    const errors = error ? <ErrorMessage /> : null;
+    const spinner = loading ? <Spinner /> : null;
 
-        return (
-            <div className="char__list">
-                <ul className="char__grid">
-                    {content}
-                    {errors}
-                    {spinner}
-                </ul>
-                <button 
-                    className="button button__main button__long"
-                    onClick={this.loadChars}
-                    disabled={newItemLoading}
-                    style={{'display': charEnded ? 'none' : 'block'}}>
-                    <div className="inner">load more</div>
-                </button>
-            </div>
-        )
-    }
-
+    return (
+        <div className="char__list">
+            <ul className="char__grid">
+                {content}
+                {errors}
+                {spinner}
+            </ul>
+            <button 
+                className="button button__main button__long"
+                onClick={loadChars}
+                disabled={newItemLoading}
+                style={{'display': charEnded ? 'none' : 'block'}}>
+                <div className="inner">load more</div>
+            </button>
+        </div>
+    )
 }
 
 CharList.propTypes = {
