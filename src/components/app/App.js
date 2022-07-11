@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useMarvelServices from "../services/getApi";
 import ErrorBoundary from "../errorBoundary/ErrorBoundary";
 import AppHeader from "../appHeader/AppHeader";
 import RandomChar from "../randomChar/RandomChar";
@@ -10,7 +11,7 @@ import SingleComic from "../singleComic/SingleComic";
 import decoration from '../../resources/img/vision.png';
 
 const App = () => {
-
+    const {error, loading, getComic} = useMarvelServices();
     const [charId, setCharId] = useState(null);
 
     const onCharSelected = (charId) => {
@@ -33,7 +34,7 @@ const App = () => {
                     </ErrorBoundary>
                 </div> */}
                 <ComicsList/>
-                <SingleComic/>
+                <SingleComic id={234} />
                 <img className="bg-decoration" src={decoration} alt="vision"/>
             </main>
         </div>

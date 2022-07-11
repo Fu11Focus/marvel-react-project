@@ -16,7 +16,6 @@ const ComicsList = () => {
 
     const buildList = async (firstLoading) => {
         firstLoading ? setNewItemLoading(false) : setNewItemLoading(true);
-        console.log(newItemLoading)
         let comics = [];
         await getAllComics(offset)
             .then(data => comics = data.map((item) => {
