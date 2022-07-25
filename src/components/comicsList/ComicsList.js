@@ -4,6 +4,8 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/Spinner';
 
 import { useState, useEffect } from 'react';
+import {Link} from "react-router-dom";
+
 const ComicsList = () => {
     const {error, loading, getAllComics} = useMarvelServices();
     const [newItemLoading, setNewItemLoading] = useState(false);
@@ -21,11 +23,11 @@ const ComicsList = () => {
             .then(data => comics = data.map((item) => {
                 return(
                     <li key = {item.id} className="comics__item">
-                        <a href="#">
+                        <Link to={`/comics/${item.id}`}>
                             <img src={item.thumbnail} alt={item.title} className="comics__item-img"/>
                             <div className="comics__item-name">{item.title}</div>
                             <div className="comics__item-price">{item.price}$</div>
-                        </a>
+                        </Link>
                     </li> 
                 )
             }))

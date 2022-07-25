@@ -1,21 +1,23 @@
-import './singleComic.scss';
+import './singleComicPage.scss';
 import useMarvelServices from '../services/getApi';
 import { useEffect, useState } from 'react';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/Spinner';
+import { useParams, Link } from 'react-router-dom';
 
-const SingleComic = ({id}) => {
+const SingleComicPage = () => {
     const {loading, error, getComic, clearError} = useMarvelServices();
     const [comic, setComic] = useState([]);
-
+    const {comicId} = useParams();
+    
     useEffect(() => {
         loadData();
-    }, []);
+    }, [comicId]);
 
     const loadData = () => {
-        let newComic = [];
-        getComic(id)
-            .then(data => setComic(data[0]))
+        clearError();
+        getComic(comicId)
+            .then(data => setComic(data[0]));
     }
 
     const errorView = error ? <ErrorMessage/> : null;
@@ -41,8 +43,8 @@ const ViewComic = ({comic}) => {
                 <p className="single-comic__descr">{language}</p>
                 <div className="single-comic__price">{price}$</div>
             </div>
-            <a href="#" className="single-comic__back">Back to all</a>
+            <Link to="/comics" className="single-comic__back">Back to all</Link>
         </div>
     )
 }
-export default SingleComic;
+export default SingleComicPage;
