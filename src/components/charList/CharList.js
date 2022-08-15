@@ -4,7 +4,11 @@ import {PropTypes} from 'prop-types';
 import { useState, useEffect } from 'react';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/Spinner';
-
+import {
+    CSSTransition,
+    TransitionGroup,
+  } from 'react-transition-group';
+  
 const CharList = (props) => {
     const {error, loading, getAllCharacters} = useMarvelServices();
     const [chars, setChars] = useState([]);
@@ -44,14 +48,16 @@ const CharList = (props) => {
                     classNameItem = "char__item char__item_selected";
                 }
 
-                return (<li className={classNameItem}
-                            key={item.id}
-                            tabIndex="0"
-                            onKeyPress={() => props.onCharSelected(item.id)}
-                            onClick={() => props.onCharSelected(item.id)}>
-                                <img src={item.thumbnail} alt={item.name} style={style} />
-                                <div className="char__name">{item.name}</div>
-                        </li>)
+                return (<CSSTransition classNames={classNameItem} timeout={300}>
+                            <li className={classNameItem}
+                                key={item.id}
+                                tabIndex="0"
+                                onKeyPress={() => props.onCharSelected(item.id)}
+                                onClick={() => props.onCharSelected(item.id)}>
+                                    <img src={item.thumbnail} alt={item.name} style={style} />
+                                    <div className="char__name">{item.name}</div>
+                            </li>
+                        </CSSTransition>)
             });
             return list;
     }
@@ -63,7 +69,7 @@ const CharList = (props) => {
     return (
         <div className="char__list">
             <ul className="char__grid">
-                {items}
+                <TransitionGroup className="char__grid">{items}</TransitionGroup>
                 {errors}
                 {spinner}
             </ul>
